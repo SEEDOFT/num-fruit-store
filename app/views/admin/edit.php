@@ -3,8 +3,20 @@
 <div class="bg-white shadow-md rounded-lg p-8">
     <h1 class="text-2xl font-bold mb-6 text-gray-800">Edit Fruit: <?= htmlspecialchars($fruit['name']) ?></h1>
 
-    <form action="<?php echo BASE_PATH ?>/admin/update/<?= $fruit['id'] ?>" method="POST">
+    <form action="<?php echo BASE_PATH ?>/admin/update/<?= $fruit['frId'] ?>" method="POST"
+        enctype="multipart/form-data">
         <div class="space-y-6">
+            <div>
+                <label for="catId" class="block text-sm font-medium text-gray-700">Fruit Category</label>
+                <select id="catId" name="catId" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                    <?php foreach ($categories as $category): ?>
+                        <option value="<?= htmlspecialchars($category['catId']) ?>" <?= $fruit['catId'] == $category['catId'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($category['category']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
             <div>
                 <label for="name" class="block text-sm font-medium text-gray-700">Fruit Name</label>
                 <input type="text" name="name" id="name" value="<?= htmlspecialchars($fruit['name']) ?>" required
@@ -19,8 +31,13 @@
                     </div>
                     <input type="number" name="price" id="price" step="0.01"
                         value="<?= htmlspecialchars($fruit['price']) ?>" required
-                        class="block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                        class="block w-full rounded-md border-gray-300 pl-7 focus:border-green-500 focus:ring-green-500 sm:text-sm">
                 </div>
+            </div>
+            <div>
+                <label for="qty" class="block text-sm font-medium text-gray-700">Quantity</label>
+                <input type="number" name="qty" id="qty" value="<?= htmlspecialchars($fruit['qty']) ?>" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
             </div>
 
             <div>
@@ -30,11 +47,13 @@
             </div>
 
             <div>
-                <label for="image" class="block text-sm font-medium text-gray-700">Image URL (Optional)</label>
-                <input type="text" name="image" id="image" value="<?= htmlspecialchars($fruit['image']) ?>"
-                    placeholder="https://example.com/image.jpg"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
-                <img src="<?= htmlspecialchars($fruit['image'] ?: 'https://placehold.co/600x400/e2e8f0/cbd5e0?text=No+Image') ?>"
+                <label for="image" class="block text-sm font-medium text-gray-700">Change Image</label>
+                <input type="file" name="image" id="image" accept="image/*"
+                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
+                <input type="hidden" name="current_image" value="<?= htmlspecialchars($fruit['image']) ?>">
+
+                <p class="mt-2 text-sm text-gray-500">Current Image:</p>
+                <img src="<?= htmlspecialchars(BASE_PATH . ($fruit['image'] ? '/storage/images/' . $fruit['image'] : '/storage/images/placeholder.png')) ?>"
                     alt="Current Image" class="mt-2 h-24 w-auto rounded-md" />
             </div>
         </div>

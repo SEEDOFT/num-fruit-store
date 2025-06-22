@@ -3,8 +3,19 @@
 <div class="bg-white shadow-md rounded-lg p-8">
     <h1 class="text-2xl font-bold mb-6 text-gray-800">Add a New Fruit</h1>
 
-    <form action="<?php echo BASE_PATH ?>/admin/store" method="POST">
+    <form action="<?php echo BASE_PATH ?>/admin/store" method="POST" enctype="multipart/form-data">
         <div class="space-y-6">
+            <div>
+                <label for="catId" class="block text-sm font-medium text-gray-700">Fruit Category</label>
+                <select id="catId" name="catId" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                    <option value="">Select a category</option>
+                    <?php foreach ($categories as $category): ?>
+                        <option value="<?= htmlspecialchars($category['catId']) ?>">
+                            <?= htmlspecialchars($category['category']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
             <div>
                 <label for="name" class="block text-sm font-medium text-gray-700">Fruit Name</label>
                 <input type="text" name="name" id="name" required
@@ -18,8 +29,13 @@
                         <span class="text-gray-500 sm:text-sm">$</span>
                     </div>
                     <input type="number" name="price" id="price" step="0.01" required
-                        class="block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                        class="block w-full rounded-md border-gray-300 pl-7 focus:border-green-500 focus:ring-green-500 sm:text-sm">
                 </div>
+            </div>
+             <div>
+                <label for="qty" class="block text-sm font-medium text-gray-700">Quantity</label>
+                <input type="number" name="qty" id="qty" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
             </div>
 
             <div>
@@ -29,9 +45,9 @@
             </div>
 
             <div>
-                <label for="image" class="block text-sm font-medium text-gray-700">Image URL (Optional)</label>
-                <input type="text" name="image" id="image" placeholder="https://example.com/image.jpg"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                <label for="image" class="block text-sm font-medium text-gray-700">Fruit Image</label>
+                <input type="file" name="image" id="image" accept="image/*"
+                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
             </div>
         </div>
 

@@ -4,50 +4,52 @@ namespace App\Controllers;
 
 use App\Controllers\Controller;
 use App\Models\Fruit;
+use App\Models\Category;
 
 class FruitController extends Controller
 {
     private $fruitModel;
+    private $categoryModel;
     private $connection;
 
-    /**
-     * Establish Connection
-     */
     public function __construct($connection)
     {
         $this->connection = $connection;
         $this->fruitModel = new Fruit($this->connection);
+        $this->categoryModel = new Category($this->connection);
     }
 
-    /**
-     * Show the main fruit store page for customers.
-     */
-    public function index()
+    private function checkAdminAuth()
     {
-        $fruits = $this->fruitModel->getAll();
-        require __DIR__ . '/../views/home/index.php';
+        if (!isset($_SESSION['admin_id'])) {
+            header('Location: ' . BASE_PATH . '/admin/login');
+            exit;
+        }
     }
 
-    /**
-     * Show the admin dashboard with all fruits.
-     */
     public function admin()
     {
+        $this->checkAdminAuth();
         $fruits = $this->fruitModel->getAll();
         require __DIR__ . '/../views/admin/index.php';
     }
 
-    /**
-     * Show the form to create a new fruit.
-     */
+    public function index()
+    {
+        $categories = $this->categoryModel->getAll();
+        $selectedCategory = $_GET['category'] ?? null;
+        $fruits = $this->fruitModel->getAll($selectedCategory);
+
+        require __DIR__ . '/../views/home/index.php';
+    }
+
     public function create()
     {
+        $this->checkAdminAuth();
+        $categories = $this->categoryModel->getAll();
         require __DIR__ . '/../views/admin/create.php';
     }
 
-    /**
-     * Store a new fruit in the database.
-     */
     public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -56,25 +58,26 @@ class FruitController extends Controller
             $this->fruitModel->description = $_POST['description'];
             $this->fruitModel->qty = $_POST['qty'];
             $this->fruitModel->price = $_POST['price'];
-            $this->fruitModel->image = $_POST['image'];
-            $this->fruitModel->regDate = $_POST['regDate'];
+
+            $imagePath = null;
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $imagePath = $this->handleImageUpload($_FILES['image']);
+            }
+            $this->fruitModel->image = $imagePath;
 
             if ($this->fruitModel->create()) {
                 header('Location: ' . BASE_PATH . '/admin');
                 exit;
             }
-        } else {
-            header('Location: ' . BASE_PATH . '/admin/create');
-            exit;
         }
+        header('Location: ' . BASE_PATH . '/admin/create');
+        exit;
     }
 
-    /**
-     * Show the form to edit an existing fruit.
-     */
     public function edit($id)
     {
         $fruit = $this->fruitModel->getById($id);
+        $categories = $this->categoryModel->getAll();
         if ($fruit) {
             require __DIR__ . '/../views/admin/edit.php';
         } else {
@@ -83,44 +86,70 @@ class FruitController extends Controller
         }
     }
 
-    /**
-     * Update an existing fruit in the database.
-     */
     public function update($id)
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
-            $description = filter_input(INPUT_POST, 'description', FILTER_SANITIZE_STRING);
-            $price = filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT);
-            $image = filter_input(INPUT_POST, 'image', FILTER_SANITIZE_URL);
+            $this->fruitModel->frId = $id;
+            $this->fruitModel->catId = $_POST['catId'];
+            $this->fruitModel->name = $_POST['name'];
+            $this->fruitModel->description = $_POST['description'];
+            $this->fruitModel->price = $_POST['price'];
+            $this->fruitModel->qty = $_POST['qty'];
 
-            if ($name && $description && $price !== false) {
-                $this->fruitModel->update();
-                header('Location: /num-fruit-store/admin');
-                exit;
-            } else {
-                header('Location: /admin/edit/' . $id);
+            $imagePath = $_POST['current_image'];
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $this->deleteImage($imagePath);
+                $imagePath = $this->handleImageUpload($_FILES['image']);
+            }
+            $this->fruitModel->image = $imagePath;
+
+            if ($this->fruitModel->update()) {
+                header('Location: ' . BASE_PATH . '/admin');
                 exit;
             }
         }
+        header('Location: ' . BASE_PATH . '/admin/edit/' . $id);
+        exit;
     }
 
-    /**
-     * Delete a fruit from the database.
-     */
     public function destroy($id)
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->fruitModel->delete();
-            header('Location: /admin');
+        $this->checkAdminAuth();
+        $fruit = $this->fruitModel->getById($id);
+        if ($fruit && $fruit['image']) {
+            $this->deleteImage($fruit['image']);
+        }
+
+        $this->fruitModel->frId = $id;
+        if ($this->fruitModel->delete()) {
+            header('Location: ' . BASE_PATH . '/admin');
             exit;
         } else {
-            $fruit = $this->fruitModel->getById($id);
-            if ($fruit) {
-                echo "Are you sure you want to delete this fruit? <form method='post'><button type='submit'>Yes, Delete</button></form>";
-            } else {
-                http_response_code(404);
-                echo "Fruit not found.";
+            http_response_code(500);
+            echo "Failed to delete fruit.";
+        }
+    }
+
+    private function handleImageUpload($file)
+    {
+        $uploadDir = 'storage/images/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        $fileName = uniqid() . '-' . basename($file['name']);
+        $targetPath = $uploadDir . $fileName;
+        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+            return $fileName;
+        }
+        return null;
+    }
+
+    private function deleteImage($fileName)
+    {
+        if ($fileName) {
+            $filePath = 'storage/images/' . $fileName;
+            if (file_exists($filePath)) {
+                unlink($filePath);
             }
         }
     }

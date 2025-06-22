@@ -34,9 +34,11 @@
                         <a href="<?php echo BASE_PATH ?>"
                             class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                             target="_blank">View Store</a>
+                        <a href="<?php echo BASE_PATH ?>/admin/logout"
+                            class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Logout</a>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
-    <main class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8"></main>
+    <main class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
