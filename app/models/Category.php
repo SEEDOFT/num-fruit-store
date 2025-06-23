@@ -59,7 +59,7 @@ class Category
         $stmt = $this->connection->prepare($query);
         $stmt->bindParam(":catId", $id, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $stmt->fetch(PDO::FETCH_ASSOC);  
     }
 
     /**
