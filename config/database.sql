@@ -48,7 +48,7 @@ CREATE TABLE
         CONSTRAINT `fruits_ibfk_1` FOREIGN KEY (`catId`) REFERENCES `categories` (`catId`) ON DELETE CASCADE ON UPDATE CASCADE
     );
 
-IINSERT INTO `fruits` (
+INSERT INTO `fruits` (
     `catId`,
     `name`,
     `description`,
